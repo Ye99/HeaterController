@@ -1,5 +1,6 @@
-MicropythonCommonTools/
+MicroPythonLibriaries/
 credentials.json
+BME280/
 
 *.bin
 .idea/
