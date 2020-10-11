@@ -1,5 +1,6 @@
-import time
 import gc
+import time
+
 import ujson
 from MicroPythonLibriaries.connectWifi import do_connect
 from micropython import const
@@ -58,6 +59,9 @@ while True:
             message = '{}_heater turned off'.format(mqtt_message_sequence)
             print(message)
             mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
+
+        message = '{}_heater status {}'.format(mqtt_message_sequence, heater.get_status())
+        mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
         humidity = measurement["humidity"]
         humidity_message = '{}_humidity: {}'.format(mqtt_message_sequence, humidity)

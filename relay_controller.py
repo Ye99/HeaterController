@@ -15,5 +15,17 @@ def turn_on() -> None:
 def turn_off() -> None:
     relay.value(0)
 
+
+def get_status() -> str:
+    """
+    Get current status.
+    :return: "on" or "off".
+    """
+    if relay.value() == 1:
+        return "on"
+    else:
+        return "off"
+
+
 # Default off at device initialization.
 turn_off()
