@@ -1,0 +1,3 @@
+[submodule "BME280"]
+	path = BME280
+	url = git@github.com:Ye99/BME280.git
