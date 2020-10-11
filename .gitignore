@@ -3,6 +3,9 @@ MicropythonCommonTools/
 credentials.json
 BME280/
 
+# This is copied from MicropythonCommonTools (subcomponent). Do not track this copy.
+boot.py
+
 *.bin
 
 # Byte-compiled / optimized / DLL files

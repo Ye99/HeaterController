@@ -9,8 +9,8 @@ import relay_controller as heater
 from MicroPythonLibriaries.connectWifi import do_connect
 
 # In Celsius
-_heater_off_temperature = const(18)
-_heater_on_temperature = const(6)
+_heater_off_temperature = const(23)
+_heater_on_temperature = 22.9
 
 # In ms.
 _measure_interval = const(1000)
@@ -37,19 +37,28 @@ while True:
     # {'pressure': 101412.0, 'humidity': 39.5, 'temperature': 27.86}
 
     temperature = measurement["temperature"]
-    temperature_message = f'Temperature: {temperature}'
-    mqtt_client.publish_message(temperature_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
+    temperature_message = 'Temperature: {}'.format(temperature)
+    print(temperature_message)
+    #mqtt_client.publish_message(temperature_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
     if temperature <= _heater_on_temperature:
         heater.turn_on()
+        message = 'heater turned on'
+        print(message)
+        # mqtt_client.publish_message(message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
     elif temperature >= _heater_off_temperature:
         heater.turn_off()
+        message = 'heater turned off'
+        print(message)
+        # mqtt_client.publish_message(message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
     humidity = measurement["humidity"]
-    humidity_message = f'Humidity: {humidity}'
-    mqtt_client.publish_message(humidity_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
+    humidity_message = 'Humidity: {}'.format(humidity)
+    print(humidity_message)
+    # mqtt_client.publish_message(humidity_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
     pressure = measurement["pressure"]
-    pressure_message = f'Pressure: {pressure}'
-    mqtt_client.publish_message(pressure_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
+    pressure_message = 'Pressure: {}'.format(pressure)
+    print(pressure_message)
+    #mqtt_client.publish_message(pressure_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
     print('========================')
