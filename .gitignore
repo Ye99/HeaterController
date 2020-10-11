@@ -1,9 +1,9 @@
 MicroPythonLibriaries/
+MicropythonCommonTools/
 credentials.json
 BME280/
 
 *.bin
-.idea/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

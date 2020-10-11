@@ -4,3 +4,6 @@
 [submodule "MicroPythonLibriaries"]
 	path = MicroPythonLibriaries
 	url = git@github.com:Ye99/MicroPythonLibriaries.git
+[submodule "MicropythonCommonTools"]
+	path = MicropythonCommonTools
+	url = git@github.com:Ye99/MicropythonCommonTools.git
