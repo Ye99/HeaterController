@@ -1,5 +1,5 @@
 import time
-
+import gc
 import ujson
 from MicroPythonLibriaries.connectWifi import do_connect
 from micropython import const
@@ -35,6 +35,9 @@ mqtt_message_sequence = 0
 
 while True:
     try:
+        # periodically gc is good https://docs.micropython.org/en/latest/reference/speed_python.html
+        gc.collect()
+
         time.sleep_ms(_measure_interval)
         measurement = BME280_controller.sensor.get_measurement()
         # Example readings
