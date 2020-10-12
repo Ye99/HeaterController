@@ -26,7 +26,7 @@ def publish_message(topic, message, client_id, server, user, password) -> None:
             c.publish(topic, message)
             c.disconnect()
         else:
-            print('Connect to MQTT server failed. ')
+            print('\tConnect to MQTT server failed. ')
     except OSError:  # If network is down, proceed to next step and continue heater control
-        print('Publish message failed, error {}'.format(OSError.strerror))
+        print('\tPublish message failed, error {}'.format(OSError))
         pass
