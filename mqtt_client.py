@@ -13,16 +13,20 @@ def publish_message(topic, message, client_id, server, user, password) -> None:
     :param password: Password e.g. b"mosquitto". If username/pwd wrong, this method will throw Exception
     :return:
     """
-    print('Publish message {0}'.format(message))
-    # don't catch "fail fast fail hard".
-    c = MQTTClient(client_id=client_id,
-                   # use parameter assignments, because skipped port and thus sequence won't match.
-                   server=server,
-                   user=user,
-                   password=password,
-                   ssl=False)
-    if 0 == c.connect():  # 0 is success.
-        c.publish(topic, message)
-        c.disconnect()
-    else:
-        print('Connect to MQTT server failed. ')
+    try:
+        print('Publish message {0}'.format(message))
+        # don't catch "fail fast fail hard".
+        c = MQTTClient(client_id=client_id,
+                       # use parameter assignments, because skipped port and thus sequence won't match.
+                       server=server,
+                       user=user,
+                       password=password,
+                       ssl=False)
+        if 0 == c.connect():  # 0 is success.
+            c.publish(topic, message)
+            c.disconnect()
+        else:
+            print('Connect to MQTT server failed. ')
+    except OSError:  # If network is down, proceed to next step and continue heater control
+        print('Publish message failed, error {}'.format(OSError.strerror))
+        pass
