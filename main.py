@@ -46,18 +46,15 @@ while True:
 
         temperature = measurement["temperature"]
         temperature_message = '{}_temperature: {}'.format(mqtt_message_sequence, temperature)
-        print(temperature_message)
         mqtt_client.publish_message(mqtt_topic, temperature_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
         if temperature <= _heater_on_temperature:
             heater.turn_on()
             message = '{}_heater turned on'.format(mqtt_message_sequence)
-            print(message)
             mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
         elif temperature >= _heater_off_temperature:
             heater.turn_off()
             message = '{}_heater turned off'.format(mqtt_message_sequence)
-            print(message)
             mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
         message = '{}_heater status {}'.format(mqtt_message_sequence, heater.get_status())
@@ -65,12 +62,10 @@ while True:
 
         humidity = measurement["humidity"]
         humidity_message = '{}_humidity: {}'.format(mqtt_message_sequence, humidity)
-        print(humidity_message)
         mqtt_client.publish_message(mqtt_topic, humidity_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
         pressure = measurement["pressure"]
         pressure_message = '{}_pressure: {}'.format(mqtt_message_sequence, pressure)
-        print(pressure_message)
         mqtt_client.publish_message(mqtt_topic, pressure_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
         print('========================')
         mqtt_message_sequence += 1
