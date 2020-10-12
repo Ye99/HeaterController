@@ -10,8 +10,8 @@ import mqtt_client
 import relay_controller as heater
 
 # In Celsius
-_heater_off_temperature = const(23)
-_heater_on_temperature = 22.9
+_heater_off_temperature = const(24)
+_heater_on_temperature = const(10)
 
 # In ms.
 _measure_interval = const(5000)
