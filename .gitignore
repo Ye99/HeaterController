@@ -1,7 +1,7 @@
-MicroPythonLibriaries/
-MicropythonCommonTools/
+#MicroPythonLibriaries/
+#MicropythonCommonTools/
 credentials.json
-BME280/
+#BME280/
 
 # This is copied from MicropythonCommonTools (subcomponent). Do not track this copy.
 boot.py
