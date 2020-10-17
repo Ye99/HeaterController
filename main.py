@@ -50,14 +50,14 @@ while True:
 
         if temperature <= _heater_on_temperature:
             heater.turn_on()
-            message = '{}_heater turned on'.format(mqtt_message_sequence)
+            message = '{}_relay turned on'.format(mqtt_message_sequence)
             mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
         elif temperature >= _heater_off_temperature:
             heater.turn_off()
-            message = '{}_heater turned off'.format(mqtt_message_sequence)
+            message = '{}_relay turned off'.format(mqtt_message_sequence)
             mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
-        message = '{}_heater status {}'.format(mqtt_message_sequence, heater.get_status())
+        message = '{}_relay status {}'.format(mqtt_message_sequence, heater.get_status())
         mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
         humidity = measurement["humidity"]
