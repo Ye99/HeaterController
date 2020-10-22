@@ -7,7 +7,7 @@ from micropython import const
 
 import BME280_controller
 import mqtt_client
-import relay_controller as heater
+import relay_controller as relay
 
 # In Celsius
 _heater_off_temperature = const(24)
@@ -49,15 +49,15 @@ while True:
         mqtt_client.publish_message(mqtt_topic, temperature_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
         if temperature <= _heater_on_temperature:
-            heater.turn_on()
+            relay.turn_on()
             message = '{}_relay turned on'.format(mqtt_message_sequence)
             mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
         elif temperature >= _heater_off_temperature:
-            heater.turn_off()
+            relay.turn_off()
             message = '{}_relay turned off'.format(mqtt_message_sequence)
             mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
-        message = '{}_relay status {}'.format(mqtt_message_sequence, heater.get_status())
+        message = '{}_relay status {}'.format(mqtt_message_sequence, relay.get_status())
         mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
 
         humidity = measurement["humidity"]
