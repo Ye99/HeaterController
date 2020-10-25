@@ -1,20 +1,19 @@
 import gc
 import time
 
+import machine
 import ujson
 from MicroPythonLibriaries.connectWifi import do_connect
 from micropython import const
 
 import BME280_controller
+import error_counter
 import mqtt_client
-import relay_controller as relay
 
-# In Celsius
-_heater_off_temperature = const(24)
-_heater_on_temperature = const(10)
+error_counter = error_counter.ErrorCounter()
 
 # In ms.
-_measure_interval = const(5000)
+_measure_interval = const(10000)
 assert _measure_interval > 100, "Must wait for measurement settle time before taking the next measurement."
 
 with open('credentials.json') as f:
@@ -32,43 +31,80 @@ mqtt_client_id = mqtt['client_id']
 mqtt_server = mqtt['server']
 mqtt_topic = mqtt['topic']
 
+_control_strategy = credentials['Control_Strategy']
+
+if "temperature" == _control_strategy:
+    import temperature_strategy
+
+    control_strategy = temperature_strategy.TemperatureControlStrategy()
+elif "humidity" == _control_strategy:
+    import humidity_strategy
+
+    control_strategy = humidity_strategy.HumidityControlStrategy()
+
 mqtt_message_sequence = 0
+mqtt_failure_count = 0
 
 while True:
     try:
         # periodically gc is good https://docs.micropython.org/en/latest/reference/speed_python.html
         gc.collect()
 
-        time.sleep_ms(_measure_interval)
+        print('\n======Measurements=======')
         measurement = BME280_controller.sensor.get_measurement()
         # Example readings
         # {'pressure': 101412.0, 'humidity': 39.5, 'temperature': 27.86}
 
         temperature = measurement["temperature"]
         temperature_message = '{}_temperature: {}'.format(mqtt_message_sequence, temperature)
-        mqtt_client.publish_message(mqtt_topic, temperature_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
-
-        if temperature <= _heater_on_temperature:
-            relay.turn_on()
-            message = '{}_relay turned on'.format(mqtt_message_sequence)
-            mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
-        elif temperature >= _heater_off_temperature:
-            relay.turn_off()
-            message = '{}_relay turned off'.format(mqtt_message_sequence)
-            mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
-
-        message = '{}_relay status {}'.format(mqtt_message_sequence, relay.get_status())
-        mqtt_client.publish_message(mqtt_topic, message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
+        mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, temperature_message,
+                                                  mqtt_client_id, mqtt_server, mqtt_user,
+                                                  mqtt_pwd)
 
         humidity = measurement["humidity"]
         humidity_message = '{}_humidity: {}'.format(mqtt_message_sequence, humidity)
-        mqtt_client.publish_message(mqtt_topic, humidity_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
+        mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, humidity_message,
+                                                  mqtt_client_id,
+                                                  mqtt_server, mqtt_user, mqtt_pwd)
 
         pressure = measurement["pressure"]
         pressure_message = '{}_pressure: {}'.format(mqtt_message_sequence, pressure)
-        mqtt_client.publish_message(mqtt_topic, pressure_message, mqtt_client_id, mqtt_server, mqtt_user, mqtt_pwd)
-        print('========================')
+        mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, pressure_message,
+                                                  mqtt_client_id,
+                                                  mqtt_server, mqtt_user, mqtt_pwd)
+        print('=====Control section========')
+        print('Temperature strategy {}'.format(_control_strategy))
+
+        if "temperature" == _control_strategy:
+            input_value = temperature
+        elif "humidity" == _control_strategy:
+            input_value = humidity
+
+        relay_status_tuple = control_strategy.apply_strategy(input_value)
+
+        if relay_status_tuple.off_to_on:
+            message = '{}_relay turned on'.format(mqtt_message_sequence)
+            mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
+                                                      mqtt_server, mqtt_user, mqtt_pwd)
+        elif relay_status_tuple.on_to_off:
+            message = '{}_relay turned off'.format(mqtt_message_sequence)
+            mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
+                                                      mqtt_server, mqtt_user, mqtt_pwd)
+
+        message = '{}_relay status {}'.format(mqtt_message_sequence, relay_status_tuple.current_status)
+        mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
+                                                  mqtt_server, mqtt_user, mqtt_pwd)
+
         mqtt_message_sequence += 1
 
-    except OSError:  # [Errno 110] ETIMEDOUT because of reading sensor, or network error.
-        pass
+        time.sleep_ms(_measure_interval)  # wait before reconnect wifi, otherwise pending message will be dropped.
+
+        print("Current mqtt failure count is {}".format(mqtt_failure_count))
+        if mqtt_failure_count > 20:
+            machine.reset()
+
+        # do_connect(ssid, wifi_pwd)
+    except Exception as e:  # [Errno 110] ETIMEDOUT because of reading sensor, or network error.
+        print('\tException {}'.format(e))
+        time.sleep_ms(_measure_interval)  # This wait is necessary, otherwise endless loop.
+        machine.reset()
