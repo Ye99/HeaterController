@@ -78,7 +78,7 @@ while True:
                                                   mqtt_client_id,
                                                   mqtt_server, mqtt_user, mqtt_pwd)
         print('=====Control section========')
-        print('Temperature strategy {}'.format(_control_strategy))
+        print('Control strategy is {}'.format(_control_strategy))
 
         if "temperature" == _control_strategy:
             input_value = temperature
