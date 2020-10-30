@@ -16,6 +16,11 @@ error_counter = error_counter.ErrorCounter()
 _measure_interval = const(10000)
 assert _measure_interval > 100, "Must wait for measurement settle time before taking the next measurement."
 
+# each loop can generate 5 mqtt errors * number of loop in 4 minutes. Larger than rebooting router time, 2.5 minutes.
+# 4 * 60 / (_measure_interval / 1000) * 5 = 120
+_mqtt_consecutive_failure_threshold = const(120)
+print("_mqtt_consecutive_failure_threshold is {}".format(_mqtt_consecutive_failure_threshold))
+
 with open('credentials.json') as f:
     credentials = ujson.load(f)
 
@@ -100,10 +105,9 @@ while True:
         time.sleep_ms(_measure_interval)  # wait before reconnect wifi, otherwise pending message will be dropped.
 
         print("Current mqtt failure count is {}".format(mqtt_failure_count))
-        if mqtt_failure_count > 20:
+        if mqtt_failure_count > _mqtt_consecutive_failure_threshold:
             machine.reset()
 
-        # do_connect(ssid, wifi_pwd)
     except Exception as e:  # [Errno 110] ETIMEDOUT because of reading sensor, or network error.
         print('\tException {}'.format(e))
         time.sleep_ms(_measure_interval)  # This wait is necessary, otherwise endless loop.
