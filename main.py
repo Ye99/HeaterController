@@ -76,9 +76,11 @@ while True:
         # MQTT message using InfluxDB line protocol
         # weather,location=us-midwest,season=summer temperature=82
         # https://docs.influxdata.com/influxdb/v1.8/write_protocols/line_protocol_tutorial/
-        message = 'status,location={},control_strategy={} ' \
+        message = 'status,location={},control_strategy={},sequence_id={} ' \
                   'temperature={},humidity={},pressure={},relay={},relay_off->on={},relay_on->off={}'.format(
-            _location, _control_strategy, temperature, humidity, pressure, relay_status_tuple.current_status,
+            _location, _control_strategy, mqtt_message_sequence,
+            temperature, humidity, pressure,
+            relay_status_tuple.current_status,
             relay_status_tuple.off_to_on,
             relay_status_tuple.on_to_off)
         mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
