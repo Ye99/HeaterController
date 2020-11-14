@@ -15,7 +15,7 @@ def publish_message(topic, message, client_id, server, user, password) -> bool:
     :return True if publishing succeeded; False if failed.
     """
     try:
-        print('Publish message {0}'.format(message))
+        print('Publish message: {0}'.format(message))
         # don't catch "fail fast fail hard".
         c = MQTTClient(client_id=client_id,
                        # use parameter assignments, because skipped port and thus sequence won't match.

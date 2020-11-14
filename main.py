@@ -16,9 +16,10 @@ error_counter = error_counter.ErrorCounter()
 _measure_interval = const(10000)
 assert _measure_interval > 100, "Must wait for measurement settle time before taking the next measurement."
 
-# each loop can generate 5 mqtt errors * number of loop in 4 minutes. Larger than rebooting router time, 2.5 minutes.
-# 4 * 60 / (_measure_interval / 1000) * 5 = 120
-_mqtt_consecutive_failure_threshold = const(120)
+# each loop can generate 1 mqtt errors * number of loop in 4 minutes.
+# Make sure longer than rebooting router time, 2.5 minutes.
+# 4 * 60 / (_measure_interval / 1000) * 1 = 24. Put in below const.
+_mqtt_consecutive_failure_threshold = const(24)
 print("_mqtt_consecutive_failure_threshold is {}".format(_mqtt_consecutive_failure_threshold))
 
 with open('credentials.json') as f:
@@ -55,29 +56,13 @@ while True:
         # periodically gc is good https://docs.micropython.org/en/latest/reference/speed_python.html
         gc.collect()
 
-        print('\n======Measurements=======')
         measurement = BME280_controller.sensor.get_measurement()
         # Example readings
         # {'pressure': 101412.0, 'humidity': 39.5, 'temperature': 27.86}
-
         temperature = measurement["temperature"]
-        temperature_message = '{}_temperature: {}'.format(mqtt_message_sequence, temperature)
-        mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, temperature_message,
-                                                  mqtt_client_id, mqtt_server, mqtt_user,
-                                                  mqtt_pwd)
-
         humidity = measurement["humidity"]
-        humidity_message = '{}_humidity: {}'.format(mqtt_message_sequence, humidity)
-        mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, humidity_message,
-                                                  mqtt_client_id,
-                                                  mqtt_server, mqtt_user, mqtt_pwd)
-
         pressure = measurement["pressure"]
-        pressure_message = '{}_pressure: {}'.format(mqtt_message_sequence, pressure)
-        mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, pressure_message,
-                                                  mqtt_client_id,
-                                                  mqtt_server, mqtt_user, mqtt_pwd)
-        print('=====Control section========')
+
         print('Control strategy is {}'.format(_control_strategy))
 
         if "temperature" == _control_strategy:
@@ -87,16 +72,13 @@ while True:
 
         relay_status_tuple = control_strategy.apply_strategy(input_value)
 
-        if relay_status_tuple.off_to_on:
-            message = '{}_relay turned on'.format(mqtt_message_sequence)
-            mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
-                                                      mqtt_server, mqtt_user, mqtt_pwd)
-        elif relay_status_tuple.on_to_off:
-            message = '{}_relay turned off'.format(mqtt_message_sequence)
-            mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
-                                                      mqtt_server, mqtt_user, mqtt_pwd)
-
-        message = '{}_relay status {}'.format(mqtt_message_sequence, relay_status_tuple.current_status)
+        # MQTT message using InfluxDB line protocol
+        # weather,location=us-midwest,season=summer temperature=82
+        # https://docs.influxdata.com/influxdb/v1.8/write_protocols/line_protocol_tutorial/
+        message = 'status,location=printershed-1f temperature={},humidity={},' \
+                  'pressure={},relay={},relay_off->on={},relay_on->off={}'.format(
+            temperature, humidity, pressure, relay_status_tuple.current_status, relay_status_tuple.off_to_on,
+            relay_status_tuple.on_to_off)
         mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
                                                   mqtt_server, mqtt_user, mqtt_pwd)
 
@@ -106,7 +88,7 @@ while True:
 
         print("Current mqtt failure count is {}".format(mqtt_failure_count))
         if mqtt_failure_count > _mqtt_consecutive_failure_threshold:
-            machine.reset()
+            machine.reset()  # This recover from broken mqtt situation.
 
     except Exception as e:  # [Errno 110] ETIMEDOUT because of reading sensor, or network error.
         print('\tException {}'.format(e))
