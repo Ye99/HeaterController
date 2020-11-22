@@ -40,6 +40,9 @@ mqtt_topic = mqtt['topic']
 _control_strategy = credentials['Control_Strategy']
 _location = credentials['Location']
 
+control_strategy = None
+relay_status_tuple = None
+
 if "temperature" == _control_strategy:
     import temperature_strategy
 
@@ -64,25 +67,30 @@ while True:
         humidity = measurement["humidity"]
         pressure = measurement["pressure"]
 
-        print('Control strategy is {}'.format(_control_strategy))
+        if control_strategy is not None:
+            print('Control strategy is {}'.format(_control_strategy))
 
-        if "temperature" == _control_strategy:
-            input_value = temperature
-        elif "humidity" == _control_strategy:
-            input_value = humidity
+            if "temperature" == _control_strategy:
+                input_value = temperature
+            elif "humidity" == _control_strategy:
+                input_value = humidity
 
-        relay_status_tuple = control_strategy.apply_strategy(input_value)
+            relay_status_tuple = control_strategy.apply_strategy(input_value)
 
         # MQTT message using InfluxDB line protocol
         # weather,location=us-midwest,season=summer temperature=82
         # https://docs.influxdata.com/influxdb/v1.8/write_protocols/line_protocol_tutorial/
         message = 'status,location={},control_strategy={},sequence_id={} ' \
-                  'temperature={},humidity={},pressure={},relay={},relay_off->on={},relay_on->off={}'.format(
+                  'temperature={},humidity={},pressure={}'.format(
             _location, _control_strategy, mqtt_message_sequence,
-            temperature, humidity, pressure,
-            relay_status_tuple.current_status,
-            relay_status_tuple.off_to_on,
-            relay_status_tuple.on_to_off)
+            temperature, humidity, pressure)
+
+        if relay_status_tuple is not None:
+            message += ',relay={},relay_off->on={},relay_on->off={}'.format(
+                relay_status_tuple.current_status,
+                relay_status_tuple.off_to_on,
+                relay_status_tuple.on_to_off)
+
         mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
                                                   mqtt_server, mqtt_user, mqtt_pwd)
 
