@@ -3,6 +3,7 @@ import machine
 from BME280 import bme280_i2c
 
 # Create a Micropython I2C object with the appropriate device pins
+# SCL D1/Pin5, SDA D2/Pin4.
 i2c = machine.I2C(scl=machine.Pin(5), sda=machine.Pin(4))
 
 # Create a sensor object to represent the BME280

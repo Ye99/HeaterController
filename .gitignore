@@ -1,4 +1,4 @@
-credentials.json
+credentials*.json
 
 # This is copied from MicropythonCommonTools (subcomponent). Do not track this copy.
 boot.py
