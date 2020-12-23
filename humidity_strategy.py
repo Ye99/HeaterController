@@ -5,7 +5,7 @@ import relay_controller as relay
 
 # In Celsius
 _relay_off_humidity_threshold = const(40)
-_relay_on_humidity_threshold = const(55)
+_relay_on_humidity_threshold = const(52)
 
 
 class HumidityControlStrategy(control_strategy.ControlStrategyInterface):
