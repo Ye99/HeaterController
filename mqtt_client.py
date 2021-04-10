@@ -1,7 +1,7 @@
 from MicroPythonLibriaries.umqtt.simple import MQTTClient
 
 
-def publish_message(topic, message, client_id, server, user, password) -> bool:
+def publish_message(topic, message, client_id, server, port, user, password) -> bool:
     """
     Publish message using MQTT.
     Only call this method when wifi is connected.
@@ -10,6 +10,7 @@ def publish_message(topic, message, client_id, server, user, password) -> bool:
     :param message: The message to be published, in binary format. e.g. b"my_message"
     :param client_id: String client id of this client.
     :param server: Server ip address as string.
+    :param port: the port of MQTT service.
     :param user: User name to authenticate with MQTT server, e.g. b"mosquitto"
     :param password: Password e.g. b"mosquitto". If username/pwd wrong, this method will throw Exception
     :return True if publishing succeeded; False if failed.
@@ -20,6 +21,7 @@ def publish_message(topic, message, client_id, server, user, password) -> bool:
         c = MQTTClient(client_id=client_id,
                        # use parameter assignments, because skipped port and thus sequence won't match.
                        server=server,
+                       port=port,
                        user=user,
                        password=password,
                        ssl=False)

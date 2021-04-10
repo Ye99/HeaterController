@@ -35,6 +35,7 @@ mqtt_user = mqtt['user']
 mqtt_pwd = mqtt['pwd']
 mqtt_client_id = mqtt['client_id']
 mqtt_server = mqtt['server']
+mqtt_port = mqtt['port']
 mqtt_topic = mqtt['topic']
 
 _control_strategy = credentials['Control_Strategy']
@@ -92,7 +93,7 @@ while True:
                 relay_status_tuple.on_to_off)
 
         mqtt_failure_count = error_counter.invoke(mqtt_client.publish_message, mqtt_topic, message, mqtt_client_id,
-                                                  mqtt_server, mqtt_user, mqtt_pwd)
+                                                  mqtt_server, mqtt_port, mqtt_user, mqtt_pwd)
 
         mqtt_message_sequence += 1
 
