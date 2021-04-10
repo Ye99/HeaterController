@@ -1,6 +1,5 @@
 # HeaterController
 ESP8266 heater controller to maintain certain minimum temperature
-
 Flash credentials.json into your MicroPython root folder, with below content: 
 ```json
 {
@@ -21,6 +20,10 @@ Flash credentials.json into your MicroPython root folder, with below content:
   "Location": "where is this controller"
 }
 ```
+1. Activate Python environment: pipenv shell
+1. cd MicropythonCommonTools, ./reflashMcu.sh
+1. Above step will run rshell automatically. In rshell, run "rsync . /pyboard"
+1. Reboot the MCU.
 You will see MQTT message like:
 ```csv
 status,location=printershed-1f,control_strategy=temperature,sequence_id=357 temperature=13.02,humidity=42.1758,pressure=101452,relay=off,relay_off->on=False,relay_on->off=False
