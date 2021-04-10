@@ -1,5 +1,6 @@
 credentials*.json
 
+.idea/
 # This is copied from MicropythonCommonTools (subcomponent). Do not track this copy.
 boot.py
 
