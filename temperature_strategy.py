@@ -4,8 +4,8 @@ import control_strategy
 import relay_controller as relay
 
 # In Celsius
-_heater_off_temperature = const(25)
-_heater_on_temperature = const(18)
+_heater_off_temperature = const(11)
+_heater_on_temperature = const(8)
 
 
 class TemperatureControlStrategy(control_strategy.ControlStrategyInterface):
